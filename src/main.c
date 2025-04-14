@@ -125,6 +125,11 @@ parse_options (struct clv_buildopt *options, int argc, const char **argv) {
     }
 }
 
+_CLV_ALWAYS_INLINE static void
+cleanup_options (struct clv_buildopt *options) {
+    clv_list_clear (&options->rt_args, NULL);
+}
+
 int
 main (int argc, const char **argv) {
     if (argc < 2) {
@@ -136,5 +141,5 @@ main (int argc, const char **argv) {
 
     parse_options (&options, argc, argv);
 
-    clv_list_clear (&options.rt_args, NULL);
+    cleanup_options (&options);
 }
