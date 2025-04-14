@@ -136,7 +136,5 @@ main (int argc, const char **argv) {
 
     parse_options (&options, argc, argv);
 
-    clv_info ("%zu", clv_list_length (options.rt_args));
-    clv_list_iterate (options.rt_args, (void (*)(void*))puts);
     clv_list_clear (&options.rt_args, NULL);
 }
