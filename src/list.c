@@ -3,97 +3,126 @@
 #include <stdlib.h>
 #include <errno.h>
 
+struct clv_list {
+    struct clv_list_node *head;
+    struct clv_list_node *tail;
+    size_t count;
+};
+
+struct clv_list_node {
+    struct clv_list_node *prev;
+    struct clv_list_node *next;
+    void *ptr;
+};
+
+
+static struct clv_list_node *
+_clv_list_make_node (void *ptr) {
+    struct clv_list_node *node = malloc (sizeof (*node));
+
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->ptr = ptr;
+
+    return node;
+}
+
+
+struct clv_list *
+clv_list_new () {
+    clv_list_t *list = malloc (sizeof (*list));
+
+    if (list == NULL) {
+        return NULL;
+    }
+
+    list->head = NULL;
+    list->tail = NULL;
+    list->count = 0;
+
+    return list;
+}
 
 bool
-clv_list_push (struct clv_list **root, void *ptr) {
-    struct clv_list *node = malloc (sizeof (*node));
+clv_list_push_back (clv_list_t *list, void *ptr) {
+    if (list == NULL) {
+        return false;
+    }
+
+    struct clv_list_node *node = _clv_list_make_node (ptr);
 
     if (node == NULL) {
         return false;
     }
 
-    node->ptr = ptr;
-
-    if (root != NULL) {
-        node->next = *root;
+    if (list->tail == NULL) {
+        list->head = node;
+        list->tail = node;
+    } else {
+        node->prev = list->tail;
+        list->tail->next = node;
+        list->tail = node;
     }
 
-    *root = node;
+    list->count++;
 
     return true;
 }
 
-void *
-clv_list_pop (struct clv_list **root) {
-    if (root == NULL) {
-        return NULL;
-    }
-
-    struct clv_list *node = *root;
-    void *ptr = node->ptr;
-    *root = (*root)->next;
-
-    free (node);
-
-    return ptr;
-}
-
 bool
-clv_list_remove (struct clv_list **root, void *value) {
-    struct clv_list *prev = NULL;
-    struct clv_list *temp = (*root);
-
-    while (temp != NULL) {
-        if (temp->ptr == value) {
-            if (temp == (*root)) {
-                *root = (*root)->next;
-            } else {
-                prev->next = temp->next;
-            }
-
-            free (temp);
-            return true;
-        }
-
-        prev = temp;
-        temp = temp->next;
+clv_list_pop_back (clv_list_t *list, void **out_ptr) {
+    if (list == NULL || out_ptr == NULL) {
+        errno = EINVAL;
+        return false;
     }
 
-    return false;
+    if (list->tail != NULL) {
+        errno = ENOENT;
+        return false;
+    }
+
+    struct clv_list_node *prev;
+
+    prev = list->tail->prev;
+    *out_ptr = list->tail->ptr;
+    free (list->tail);
+
+    list->tail = prev;
+
+    if (prev == NULL) {
+        list->head = NULL;
+    }
+
+    list->count--;
+
+    return true;
 }
 
 size_t
-clv_list_length (struct clv_list *root) {
-    size_t length = 0;
-
-    while (root != NULL) {
-        root = root->next;
-        length++;
-    }
-
-    return length;
+clv_list_length (clv_list_t *list) {
+    return list->count;
 }
 
 void
-clv_list_iterate (struct clv_list *root, void (*callback)(void *)) {
-    while (root != NULL) {
-        callback (root->ptr);
-        root = root->next;
-    }
-}
-
-void
-clv_list_clear (struct clv_list **root, void (*_free_data)(void *)) {
-    if (root == NULL) {
-        return;
-    }
-
-    struct clv_list *curr = *root;
-    struct clv_list *temp;
+clv_list_foreach (clv_list_t *list, clv_list_func_t callback) {
+    struct clv_list_node *curr = list->head;
 
     while (curr != NULL) {
-        if (_free_data) {
-            _free_data (curr->ptr);
+        callback (curr->ptr);
+        curr = curr->next;
+    }
+}
+
+void
+clv_list_clear (clv_list_t *list, clv_list_func_t _free_ptr) {
+    struct clv_list_node *curr = list->head;
+    struct clv_list_node *temp = NULL;
+
+    while (curr != NULL) {
+        if (_free_ptr) {
+            _free_ptr (curr->ptr);
         }
 
         temp = curr->next;
@@ -102,5 +131,13 @@ clv_list_clear (struct clv_list **root, void (*_free_data)(void *)) {
         curr = temp;
     }
 
-    *root = NULL;
+    list->head = NULL;
+    list->tail = NULL;
+    list->count = 0;
+}
+
+void
+clv_list_free (clv_list_t *list, clv_list_func_t _free_ptr) {
+    clv_list_clear (list, _free_ptr);
+    free (list);
 }

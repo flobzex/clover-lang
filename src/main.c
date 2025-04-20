@@ -8,10 +8,10 @@
 
 struct clv_buildopt {
     // runtime mode
-    bool rt_nojit;              // JIT compiler
-    bool rt_nohost;             // host-bound optimizations
-    clv_zstr rt_clx_file;       // clover executable file
-    struct clv_list *rt_args;   // cmdline args
+    bool rt_nojit;          // JIT compiler
+    bool rt_nohost;         // host-bound optimizations
+    clv_zstr rt_clx_file;   // clover executable file
+    clv_list_t *rt_args;    // cmdline args
 
     // build mode
     bool cp_compile_mode;
@@ -58,7 +58,7 @@ show_help () {
         "Compile options:\n"
         "  -c MANIFEST                  Compile program\n"
         "  -d  --debug-symbols          Enable debug symbols\n"
-        "  -o FILE  --output FILE       Set output file name\n"
+        "  -o FILE  --output FILE       Set output file name\n\n"
         "General options:\n"
         "  -h  --help                   Displays this message and exits\n"
         "  -v  --version                Displays program version and exits\n"
@@ -84,6 +84,13 @@ show_version () {
 static void
 parse_options (struct clv_buildopt *options, int argc, const char **argv) {
     bool end_options = false;
+
+    options->rt_args = clv_list_new ();
+
+    if (!options->rt_args) {
+        perror ("failed to allocate list");
+        exit (1);
+    }
 
     for  (int i = 1; i < argc; i++) {
         const clv_zstr curr = argv[i];
@@ -115,7 +122,7 @@ parse_options (struct clv_buildopt *options, int argc, const char **argv) {
                 exit (1);
             }
         } else {
-            clv_list_push (&options->rt_args, (void *)argv[i]);
+            clv_list_push_back (options->rt_args, CLV_VOIDPTR (argv[i]));
         }
     }
 
@@ -127,7 +134,7 @@ parse_options (struct clv_buildopt *options, int argc, const char **argv) {
 
 _CLV_ALWAYS_INLINE static void
 cleanup_options (struct clv_buildopt *options) {
-    clv_list_clear (&options->rt_args, NULL);
+    clv_list_free (options->rt_args, NULL);
 }
 
 int
