@@ -14,7 +14,6 @@ static const struct log_level {
     { "info",    "\e[1m%s\e[0m: "    },
     { "warning", "\e[1;33m%s\e[0m: " },
     { "error",   "\e[1;31m%s\e[0m: " },
-    { "severe",  "\e[1;31m%s\e[0m: " },
     { "???",     "\e[1;40m%s\e[0m: " }
 };
 

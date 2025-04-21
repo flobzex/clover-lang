@@ -9,7 +9,6 @@ enum clv_loglevel
     CLV_LOGLEVEL_INFO,
     CLV_LOGLEVEL_WARNING,
     CLV_LOGLEVEL_ERROR,
-    CLV_LOGLEVEL_SEVERE,
     __CLV_LOGLEVEL_MAX
 };
 
@@ -18,7 +17,6 @@ enum clv_loglevel
 #define clv_info(msg,args...)       clv_log (CLV_LOGLEVEL_INFO, msg, ## args)
 #define clv_warning(msg,args...)    clv_log (CLV_LOGLEVEL_WARNING, msg, ## args)
 #define clv_error(msg,args...)      clv_log (CLV_LOGLEVEL_ERROR, msg, ## args)
-#define clv_severe(msg,args...)     clv_log (CLV_LOGLEVEL_SEVERE, msg, ## args)
 
 void _clv_log0 (const char *file, int lineno, enum clv_loglevel level, const char *msg, ...);
 
