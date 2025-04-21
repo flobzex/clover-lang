@@ -36,7 +36,7 @@ _clv_log_is_debug_enabled () {
 
 
 void
-_clv_log0 (const char *file, int lineno, enum clv_loglevel level, const char *msg, ...) {
+_clv_log0 (const char *file, int lineno, enum clv_loglevel level, bool newline, const char *msg, ...) {
     va_list args;
     FILE *out;
 
@@ -62,5 +62,7 @@ _clv_log0 (const char *file, int lineno, enum clv_loglevel level, const char *ms
     vfprintf (out, msg, args);
     va_end (args);
 
-    fputc ('\n', out);
+    if (newline) {
+        fputc ('\n', out);
+    }
 }
