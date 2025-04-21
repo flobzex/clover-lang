@@ -37,7 +37,7 @@ _clv_log0 (const char *file, int lineno, enum clv_loglevel level, const char *ms
     va_list args;
     FILE *out;
 
-    if (level == CLV_LOGLEVEL_DEBUG && !clv_log_get_debug_mode ()) {
+    if (level == CLV_LOGLEVEL_DEBUG && !_clv_log_is_debug_enabled ()) {
         return;
     }
 
