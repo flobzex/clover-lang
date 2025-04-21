@@ -10,7 +10,7 @@ static const struct log_level {
     clv_zstr level;
     clv_zstr format;
 } log_levels[] = {
-    { "debug",   "\e[1;3m%s\e[0m: "  },
+    { "debug",   "\e[1;35m%s\e[0m: " },
     { "info",    "\e[1m%s\e[0m: "    },
     { "warning", "\e[1;33m%s\e[0m: " },
     { "error",   "\e[1;31m%s\e[0m: " },
