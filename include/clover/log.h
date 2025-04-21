@@ -22,7 +22,4 @@ enum clv_loglevel
 
 void _clv_log0 (const char *file, int lineno, enum clv_loglevel level, const char *msg, ...);
 
-void clv_log_set_debug_mode (bool enabled);
-bool clv_log_get_debug_mode ();
-
 #endif /* CLOVER_LOG_H_ */

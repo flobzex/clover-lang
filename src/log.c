@@ -3,9 +3,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
-
-
-static bool _debug_mode = false;
+#include <string.h>
 
 
 static const struct log_level {
@@ -19,6 +17,22 @@ static const struct log_level {
     { "severe",  "\e[1;31m%s\e[0m: " },
     { "???",     "\e[1;40m%s\e[0m: " }
 };
+
+
+static bool
+_clv_log_is_debug_enabled () {
+    static int debug = -1;
+
+    if (debug < 0) {
+        char *debug_env = getenv("DEBUG");
+
+        if (strcmp (debug_env, "1")) {
+            debug = true;
+        }
+    }
+
+    return (bool)debug;
+}
 
 
 void
@@ -49,14 +63,4 @@ _clv_log0 (const char *file, int lineno, enum clv_loglevel level, const char *ms
     va_end (args);
 
     fputc ('\n', out);
-}
-
-void
-clv_log_set_debug_mode (bool enabled) {
-    _debug_mode = enabled;
-}
-
-bool
-clv_log_get_debug_mode () {
-    return _debug_mode;
 }
