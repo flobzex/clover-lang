@@ -25,7 +25,11 @@ _clv_log_is_debug_enabled () {
 
     if (debug < 0) {
         char *debug_env = getenv("DEBUG");
-        debug = (strcmp (debug_env, "1") == 0);
+        if (debug_env != NULL) {
+            debug = (strcmp (debug_env, "1") == 0);
+        } else {
+            debug = false;
+        }
     }
 
     return (bool)debug;
