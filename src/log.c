@@ -6,10 +6,10 @@
 #include <string.h>
 
 
-static const struct log_level {
+static const struct log_template {
     clv_zstr level;
     clv_zstr format;
-} log_levels[] = {
+} templates[] = {
     { "debug",   "\e[1;35m%s\e[0m: " },
     { "info",    "\e[1m%s\e[0m: "    },
     { "warning", "\e[1;33m%s\e[0m: " },
@@ -23,6 +23,7 @@ _clv_log_is_debug_enabled () {
 
     if (debug < 0) {
         char *debug_env = getenv("DEBUG");
+
         if (debug_env != NULL) {
             debug = (strcmp (debug_env, "1") == 0);
         } else {
@@ -35,32 +36,34 @@ _clv_log_is_debug_enabled () {
 
 
 void
-_clv_log0 (const char *file, int lineno, enum clv_loglevel level, bool newline, const char *msg, ...) {
+_clv_log0 (const char *file, int lineno, int level, int mode, const char *msg, ...) {
     va_list args;
-    FILE *out;
 
-    if (level == CLV_LOGLEVEL_DEBUG && !_clv_log_is_debug_enabled ()) {
+    if (level == CLV_DEBUG && !_clv_log_is_debug_enabled ()) {
         return;
     }
 
-    struct log_level log_level = { "???", "\e[1;40m%s\e[0m: " };
-    out = (level >= CLV_LOGLEVEL_ERROR ? stderr : stdout);
+    FILE *out = stdout;
+    struct log_template tt = { "???", "\e[1;40m%s\e[0m: " };
 
-    if ((level > 0 && level < __CLV_LOGLEVEL_MAX)) {
-        log_level = log_levels[level];
+    if ((level > 0 && level <= CLV_ERROR)) {
+        tt = templates[level];
+        out = (level >= CLV_ERROR ? stderr : stdout);
     }
 
 #if defined (CLV_DEBUG) && CLV_DEBUG
     fprintf (out, "[%s:%u] ", file, lineno);
 #endif /* CLV_DEBUG */
 
-    fprintf (out, log_level.format, log_level.level);
+    if (mode & CLV_LOG_TEMPLATE) {
+        fprintf (out, tt.format, tt.level);
+    }
 
     va_start (args, msg);
     vfprintf (out, msg, args);
     va_end (args);
 
-    if (newline) {
+    if (mode & CLV_LOG_NEWLINE) {
         fputc ('\n', out);
     }
 }

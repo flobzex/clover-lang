@@ -3,28 +3,25 @@
 
 #include <clover/base.h>
 
-enum clv_loglevel
-{
-    CLV_LOGLEVEL_DEBUG,
-    CLV_LOGLEVEL_INFO,
-    CLV_LOGLEVEL_WARNING,
-    CLV_LOGLEVEL_ERROR,
-    __CLV_LOGLEVEL_MAX
-};
+#define CLV_LOG_NONE        (0)
+#define CLV_LOG_TEMPLATE    (1)
+#define CLV_LOG_NEWLINE     (2)
+#define CLV_LOG_ALL         (CLV_LOG_TEMPLATE | CLV_LOG_NEWLINE)
 
-#define clv_log(level,msg,args...)  _clv_log0 (__FILE__, __LINE__, level, true, msg, ## args)
-#define clv_nlog(level,msg,args...) _clv_log0 (__FILE__, __LINE__, level, false, msg, ## args)
+#define CLV_DEBUG           (0)
+#define CLV_INFO            (1)
+#define CLV_WARNING         (2)
+#define CLV_ERROR           (3)
 
-#define clv_debug(msg,args...)      clv_log (CLV_LOGLEVEL_DEBUG, msg, ## args)
-#define clv_info(msg,args...)       clv_log (CLV_LOGLEVEL_INFO, msg, ## args)
-#define clv_warning(msg,args...)    clv_log (CLV_LOGLEVEL_WARNING, msg, ## args)
-#define clv_error(msg,args...)      clv_log (CLV_LOGLEVEL_ERROR, msg, ## args)
+#define clv_log(level,msg,args...)  _clv_log0 (__FILE__, __LINE__, level, CLV_LOG_ALL, msg, ## args)
+#define clv_nlog(level,msg,args...) _clv_log0 (__FILE__, __LINE__, level, CLV_LOG_TEMPLATE, msg, ## args)
+#define clv_xlog(level,msg,args...) _clv_log0 (__FILE__, __LINE__, level, CLV_LOG_NONE, msg, ## args)
 
-#define clv_ndebug(msg,args...)     clv_nlog (CLV_LOGLEVEL_DEBUG, msg, ## args)
-#define clv_ninfo(msg,args...)      clv_nlog (CLV_LOGLEVEL_INFO, msg, ## args)
-#define clv_nwarning(msg,args...)   clv_nlog (CLV_LOGLEVEL_WARNING, msg, ## args)
-#define clv_nerror(msg,args...)     clv_nlog (CLV_LOGLEVEL_ERROR, msg, ## args)
+#define clv_debug(msg,args...)      clv_log (CLV_DEBUG, msg, ## args)
+#define clv_info(msg,args...)       clv_log (CLV_INFO, msg, ## args)
+#define clv_warning(msg,args...)    clv_log (CLV_WARNING, msg, ## args)
+#define clv_error(msg,args...)      clv_log (CLV_ERROR, msg, ## args)
 
-void _clv_log0 (const char *file, int lineno, enum clv_loglevel level, bool newline, const char *msg, ...);
+void _clv_log0 (clv_zstr file, int lineno, int level, int mode, clv_zstr msg, ...);
 
 #endif /* CLOVER_LOG_H_ */
