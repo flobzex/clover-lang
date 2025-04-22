@@ -13,8 +13,7 @@ static const struct log_level {
     { "debug",   "\e[1;35m%s\e[0m: " },
     { "info",    "\e[1m%s\e[0m: "    },
     { "warning", "\e[1;33m%s\e[0m: " },
-    { "error",   "\e[1;31m%s\e[0m: " },
-    { "???",     "\e[1;40m%s\e[0m: " }
+    { "error",   "\e[1;31m%s\e[0m: " }
 };
 
 
@@ -44,13 +43,12 @@ _clv_log0 (const char *file, int lineno, enum clv_loglevel level, bool newline, 
         return;
     }
 
+    struct log_level log_level = { "???", "\e[1;40m%s\e[0m: " };
     out = (level >= CLV_LOGLEVEL_ERROR ? stderr : stdout);
 
-    if (!CLV_ENUM_ISVALID (level, __CLV_LOGLEVEL_MAX)) {
-        level = __CLV_LOGLEVEL_MAX;
+    if ((level > 0 && level < __CLV_LOGLEVEL_MAX)) {
+        log_level = log_levels[level];
     }
-
-    struct log_level log_level = log_levels[level];
 
 #if defined (CLV_DEBUG) && CLV_DEBUG
     fprintf (out, "[%s:%u] ", file, lineno);
