@@ -46,7 +46,7 @@ _clv_log0 (const char *file, int lineno, int level, int mode, const char *msg, .
     FILE *out = stdout;
     struct log_template tt = { "???", "\e[1;40m%s\e[0m: " };
 
-    if ((level > 0 && level <= CLV_ERROR)) {
+    if ((level >= 0 && level <= CLV_ERROR)) {
         tt = templates[level];
         out = (level >= CLV_ERROR ? stderr : stdout);
     }
