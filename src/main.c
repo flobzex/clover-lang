@@ -10,25 +10,25 @@ struct clv_buildopt {
     // runtime mode
     bool rt_nojit;          // JIT compiler
     bool rt_nohost;         // host-bound optimizations
-    clv_zstr rt_clx_file;   // clover executable file
+    clv_str rt_clx_file;    // clover executable file
     clv_list_t *rt_args;    // cmdline args
 
     // build mode
     bool cp_compile_mode;
     bool cp_debug_symbols;
-    clv_zstr cp_manifest_file;
-    clv_zstr cp_output_file;
+    clv_str cp_manifest_file;
+    clv_str cp_output_file;
 };
 
 
 _CLV_ALWAYS_INLINE static bool
-strequal (clv_zstr a, clv_zstr b) {
+strequal (clv_str a, clv_str b) {
     return strcmp (a, b) == 0;
 }
 
 
 _CLV_ALWAYS_INLINE static bool
-is_option (clv_zstr x) {
+is_option (clv_str x) {
     if (x == NULL || strlen (x) < 2) {
         return false;
     }
@@ -93,7 +93,7 @@ parse_options (struct clv_buildopt *options, int argc, const char **argv) {
     }
 
     for  (int i = 1; i < argc; i++) {
-        const clv_zstr curr = argv[i];
+        const clv_str curr = argv[i];
 
         if (!end_options && is_option (curr)) {
             if (strequal (curr, "-h") || strequal (curr, "--help")) {

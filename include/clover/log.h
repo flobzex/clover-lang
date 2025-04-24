@@ -22,7 +22,7 @@
 #define clv_warning(msg,args...)    clv_log (CLV_WARNING, msg, ## args)
 #define clv_error(msg,args...)      clv_log (CLV_ERROR, msg, ## args)
 
-void _clv_log0 (clv_zstr file, int lineno, int level, int mode, clv_zstr msg, ...);
+void _clv_log0 (clv_str file, int lineno, int level, int mode, clv_str msg, ...);
 
 bool clv_log_debug ();
 

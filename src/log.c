@@ -7,8 +7,8 @@
 
 
 static const struct log_template {
-    clv_zstr level;
-    clv_zstr format;
+    clv_str level;
+    clv_str format;
 } templates[] = {
     { "debug",   "\e[1;35m%s\e[0m: " },
     { "info",    "\e[1m%s\e[0m: "    },
@@ -36,7 +36,7 @@ clv_log_debug () {
 
 
 void
-_clv_log0 (const char *file, int lineno, int level, int mode, const char *msg, ...) {
+_clv_log0 (clv_str file, int lineno, int level, int mode, clv_str msg, ...) {
     va_list args;
 
     if (level == CLV_DEBUG && !clv_log_debug ()) {

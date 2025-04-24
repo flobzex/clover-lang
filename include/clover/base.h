@@ -30,6 +30,6 @@
 
 /* Type defs */
 
-typedef const char *clv_zstr;
+typedef const char *clv_str;
 
 #endif /* CLOVER_BASE_H_ */
