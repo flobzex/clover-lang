@@ -24,4 +24,6 @@
 
 void _clv_log0 (clv_zstr file, int lineno, int level, int mode, clv_zstr msg, ...);
 
+bool clv_log_debug ();
+
 #endif /* CLOVER_LOG_H_ */

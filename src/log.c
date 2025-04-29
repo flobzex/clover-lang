@@ -17,8 +17,8 @@ static const struct log_template {
 };
 
 
-static bool
-_clv_log_is_debug_enabled () {
+bool
+clv_log_debug () {
     static int debug = -1;
 
     if (debug < 0) {
@@ -39,7 +39,7 @@ void
 _clv_log0 (const char *file, int lineno, int level, int mode, const char *msg, ...) {
     va_list args;
 
-    if (level == CLV_DEBUG && !_clv_log_is_debug_enabled ()) {
+    if (level == CLV_DEBUG && !clv_log_debug ()) {
         return;
     }
 
