@@ -141,3 +141,53 @@ clv_list_free (clv_list_t *list, clv_list_func_t _free_ptr) {
     clv_list_clear (list, _free_ptr);
     free (list);
 }
+
+
+clv_list_iter_t
+clv_list_get_head (clv_list_t *list) {
+    if (list == NULL) {
+        return NULL;
+    }
+
+    return list->head;
+}
+
+
+clv_list_iter_t
+clv_list_get_tail (clv_list_t *list) {
+    if (list == NULL) {
+        return NULL;
+    }
+
+    return list->tail;
+}
+
+
+clv_list_iter_t
+clv_list_iter_get_prev (clv_list_iter_t iter) {
+    if (iter == NULL) {
+        return NULL;
+    }
+
+    return ((struct clv_list_node *)iter)->prev;
+}
+
+
+clv_list_iter_t
+clv_list_iter_get_next (clv_list_iter_t iter) {
+    if (iter == NULL) {
+        return NULL;
+    }
+
+    return ((struct clv_list_node *)iter)->next;
+}
+
+
+void *
+clv_list_iter_get_data (clv_list_iter_t iter) {
+    if (iter == NULL) {
+        return NULL;
+    }
+
+    return ((struct clv_list_node *)iter)->ptr;
+}
