@@ -3,6 +3,8 @@
 
 #include <clover/base.h>
 #include <clover/log.h>
+#include <clover/list.h>
+#include <clover/source.h>
 
 #include <version.h>
 
