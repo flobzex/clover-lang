@@ -4,9 +4,9 @@
 #include <clover/base.h>
 
 #define CLV_LOG_NONE        (0)
-#define CLV_LOG_TEMPLATE    (1)
+#define CLV_LOG_FORMAT      (1)
 #define CLV_LOG_NEWLINE     (2)
-#define CLV_LOG_ALL         (CLV_LOG_TEMPLATE | CLV_LOG_NEWLINE)
+#define CLV_LOG_ALL         (CLV_LOG_FORMAT | CLV_LOG_NEWLINE)
 
 #define CLV_DEBUG           (0)
 #define CLV_INFO            (1)
@@ -14,7 +14,7 @@
 #define CLV_ERROR           (3)
 
 #define clv_log(level,msg,args...)  _clv_log0 (__FILE__, __LINE__, level, CLV_LOG_ALL, msg, ## args)
-#define clv_nlog(level,msg,args...) _clv_log0 (__FILE__, __LINE__, level, CLV_LOG_TEMPLATE, msg, ## args)
+#define clv_nlog(level,msg,args...) _clv_log0 (__FILE__, __LINE__, level, CLV_LOG_FORMAT, msg, ## args)
 #define clv_xlog(level,msg,args...) _clv_log0 (__FILE__, __LINE__, level, CLV_LOG_NONE, msg, ## args)
 
 #define clv_debug(msg,args...)      clv_log (CLV_DEBUG, msg, ## args)
