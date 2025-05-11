@@ -1,67 +1,72 @@
 #include <clover.h>
-#include <clover/list.h>
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
 
 
-struct clv_buildopt {
-    // runtime mode
-    bool rt_nojit;          // JIT compiler
-    bool rt_nohost;         // host-bound optimizations
-    clv_str rt_clx_file;    // clover executable file
-    clv_list_t *rt_args;    // cmdline args
+#define CLV_OPTIONS_INIT    ((struct clv_options){ false, NULL, true, true, NULL, false, NULL, NULL })
 
-    // build mode
-    bool cp_compile_mode;
-    bool cp_debug_symbols;
+#define isoption(x)         (strlen ((x)) >= 2 && (x)[0] == '-')
+#define strequal(a,b)       (strcmp ((a), (b)) == 0)
+
+
+static struct clv_options {
+    bool compile_mode;
+    clv_list_t *args;
+
+    /* runtime options */
+
+    bool rt_flag_jit;
+    bool rt_flag_optimize;
+    clv_str rt_exec_file;
+
+    /* build options */
+
+    bool cp_debug;
     clv_str cp_manifest_file;
     clv_str cp_output_file;
-};
+} options = CLV_OPTIONS_INIT;
 
 
-_CLV_ALWAYS_INLINE static bool
-strequal (clv_str a, clv_str b) {
-    return strcmp (a, b) == 0;
-}
-
-
-_CLV_ALWAYS_INLINE static bool
-is_option (clv_str x) {
-    if (x == NULL || strlen (x) < 2) {
-        return false;
-    }
-
-    return x[0] == '-';
-}
-
-
-_CLV_ALWAYS_INLINE static void
+static void
 check_arity (int arity, int i, int argc, const char **argv) {
     if (i + arity >= argc) {
-        clv_error ("missing argument for option '%s'", argv[i]);
+        clv_error ("missing argument for option '%s'. use -h to get help", argv[i]);
         exit (1);
     }
 }
 
 
-_CLV_ALWAYS_INLINE static void
+static void
+check_compile_mode_option (clv_str option, bool toggle) {
+    if (toggle && !options.compile_mode) {
+        clv_error ("'%s' can only be used in combination with '-c'. use -h to get help", option);
+        exit (1);
+    }
+}
+
+
+static void
 show_help () {
     printf ((
         "Usage:\n"
-        "\tclover [options...] <file> [args...]\n"
-        "\tclover -c <manifest> [-d] [-o <output>]\n\n"
-        "Run options:\n"
-        "  --nojit                      Disable Just-in-Time compiler\n"
-        "  --nohost                     Disable host-bound optimizations\n\n"
-        "Compile options:\n"
-        "  -c MANIFEST                  Compile program\n"
-        "  -d  --debug-symbols          Enable debug symbols\n"
-        "  -o FILE  --output FILE       Set output file name\n\n"
-        "General options:\n"
-        "  -h  --help                   Displays this message and exits\n"
-        "  -v  --version                Displays program version and exits\n"
+        "  clover [-f flag1,-flag2...] <file> [--] [args...]\n"
+        "  clover -c [-d] [-m <manifest>] [-o <output>] [--] file...\n"
+        "\nRun options:\n"
+        "  -f FLAGS         Set runtime flags\n"
+        "\nFlags:\n"
+        "  - jit            Toggle Just-in-Time compiler\n"
+        "  - optimize       Toggle host specific optimizations\n"
+        "\nCompile options:\n"
+        "  -c               Compile program\n"
+        "  -d               Enable debug symbols\n"
+        "  -m MANIFEST      Set manifest file\n"
+        "  -o FILE          Set output file name\n"
+        "\nGeneral options:\n"
+        "  -h  --help       Displays this message and exits\n"
+        "  -v  --version    Displays program version and exits\n"
     ));
 }
 
@@ -82,20 +87,46 @@ show_version () {
 
 
 static void
-parse_options (struct clv_buildopt *options, int argc, const char **argv) {
+free_options () {
+    clv_list_free (options.args, NULL);
+}
+
+
+static void
+parse_flags (clv_str flags) {
+    char *flag = strtok ((char *)flags, ",");
+
+    bool toggle = true;
+
+    do {
+        if (flag[0] == '-') {
+            toggle = false;
+            flag++;
+        } else {
+            toggle = true;
+        }
+
+        if (strequal (flag, "jit")) {
+            options.rt_flag_jit = toggle;
+        } else if (strequal (flag, "optimize")) {
+            options.rt_flag_optimize = toggle;
+        } else {
+            clv_warning ("invalid flag: '%s'", flag);
+        }
+
+        flag = strtok (NULL, " , ");
+    } while (flag != NULL);
+}
+
+
+static void
+parse_options (int argc, const char **argv) {
     bool end_options = false;
-
-    options->rt_args = clv_list_new ();
-
-    if (!options->rt_args) {
-        perror ("failed to allocate list");
-        exit (1);
-    }
 
     for  (int i = 1; i < argc; i++) {
         const clv_str curr = argv[i];
 
-        if (!end_options && is_option (curr)) {
+        if (!end_options && isoption (curr)) {
             if (strequal (curr, "-h") || strequal (curr, "--help")) {
                 show_help ();
                 exit (0);
@@ -103,18 +134,18 @@ parse_options (struct clv_buildopt *options, int argc, const char **argv) {
                 show_version ();
                 exit (0);
             } else if (strequal (curr, "-c")) {
+                options.compile_mode = true;
+            } else if (strequal (curr, "-d")) {
+                options.cp_debug = true;
+            } else if (strequal (curr, "-f")) {
                 check_arity (1, i, argc, argv);
-                options->cp_compile_mode = true;
-                options->cp_manifest_file = argv[++i];
-            } else if (strequal (curr, "-d") || strequal (curr, "--debug-symbols")) {
-                options->cp_debug_symbols = true;
-            } else if (strequal (curr, "--nojit")) {
-                options->rt_nojit = true;
-            } else if (strequal (curr, "--nohost")) {
-                options->rt_nohost = true;
-            } else if (strequal (curr, "-o") || strequal (curr, "--output")) {
+                parse_flags (argv[++i]);
+            } else if (strequal (curr, "-m")) {
                 check_arity (1, i, argc, argv);
-                options->cp_output_file = argv[++i];
+                options.cp_manifest_file = argv[++i];
+            } else if (strequal (curr, "-o")) {
+                check_arity (1, i, argc, argv);
+                options.cp_output_file = argv[++i];
             } else if (strequal (argv[i], "--")) {
                 end_options = true;
             } else {
@@ -122,20 +153,65 @@ parse_options (struct clv_buildopt *options, int argc, const char **argv) {
                 exit (1);
             }
         } else {
-            clv_list_push_back (options->rt_args, CLV_VOIDPTR (argv[i]));
+            clv_list_push_back (options.args, CLV_VOIDPTR (argv[i]));
         }
     }
 
-    if (options->cp_compile_mode && options->rt_args != NULL) {
-        clv_error ("invalid number of arguments. use -h to get help");
+    check_compile_mode_option ("-d", (options.cp_debug));
+    check_compile_mode_option ("-m", (options.cp_manifest_file != NULL));
+    check_compile_mode_option ("-o", (options.cp_output_file != NULL));
+}
+
+
+static void
+init_options () {
+    options.args = clv_list_new ();
+
+    if (!options.args) {
+        perror ("failed to create args list");
+        exit (1);
+    }
+
+    atexit (free_options);
+}
+
+
+inline static void
+dump_options () {
+    clv_debug ("mode: %s", options.compile_mode ? "compile" : "run");
+    clv_debug ("flags: jit=%d, optimize=%d", options.rt_flag_jit, options.rt_flag_optimize);
+    clv_nlog  (CLV_DEBUG, "cmdline:");
+
+    clv_list_iter_t iter = clv_list_get_head (options.args);
+
+    for (; iter != NULL; iter = clv_list_iter_get_next (iter)) {
+        clv_str arg = clv_list_iter_get_data (iter);
+        clv_xlog (CLV_DEBUG, " %s", arg);
+    }
+
+    putchar ('\n');
+}
+
+
+inline static void
+compile_program () {
+    if (!clv_compile (stderr, options.cp_manifest_file, options.args, options.cp_output_file, options.cp_debug)) {
+        if (errno != 0) {
+            clv_error ("%s", strerror (errno));
+        }
+
+        puts ("compilation failed.");
         exit (1);
     }
 }
 
-_CLV_ALWAYS_INLINE static void
-cleanup_options (struct clv_buildopt *options) {
-    clv_list_free (options->rt_args, NULL);
+
+inline static void
+run_program () {
+    clv_error ("not implemented: code execution");
+    exit (1);
 }
+
 
 int
 main (int argc, const char **argv) {
@@ -144,9 +220,16 @@ main (int argc, const char **argv) {
         return 1;
     }
 
-    struct clv_buildopt options = {0};
+    init_options ();
+    parse_options (argc, argv);
 
-    parse_options (&options, argc, argv);
+    if (clv_log_debug ()) {
+        dump_options ();
+    }
 
-    cleanup_options (&options);
+    if (options.compile_mode) {
+        compile_program ();
+    } else {
+        run_program ();
+    }
 }

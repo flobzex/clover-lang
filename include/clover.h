@@ -5,6 +5,7 @@
 #include <clover/log.h>
 #include <clover/list.h>
 #include <clover/source.h>
+#include <clover/compiler.h>
 
 #include <version.h>
 
