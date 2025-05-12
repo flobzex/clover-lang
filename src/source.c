@@ -10,6 +10,7 @@
 
 
 struct clv_source {
+    clv_str file;
     clv_str data;
     size_t  length;
 };
@@ -70,7 +71,15 @@ clv_source_new (clv_str file) {
         return NULL;
     }
 
+    new_src->file = strdup (file);
+
+    if (new_src->file == NULL) {
+        free (new_src);
+        return NULL;
+    }
+
     if (!read_file (file, (char **)&new_src->data, &new_src->length)) {
+        free (new_src->file);
         free (new_src);
         return NULL;
     }
@@ -122,6 +131,17 @@ clv_source_cstr (clv_source_t *self) {
 }
 
 
+clv_str
+clv_source_get_file (clv_source_t *self) {
+    if (self == NULL) {
+        errno = EINVAL;
+        return NULL;
+    }
+
+    return self->file;
+}
+
+
 size_t
 clv_source_length (clv_source_t *self) {
     if (self == NULL) {
@@ -140,6 +160,7 @@ clv_source_free (clv_source_t *self) {
         return;
     }
 
+    free (CLV_VOIDPTR (self->file));
     free (CLV_VOIDPTR (self->data));
     free (CLV_VOIDPTR (self));
 }
