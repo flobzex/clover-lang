@@ -136,6 +136,22 @@ clv_source_substr (clv_source_t *self, size_t offset, size_t length) {
 }
 
 
+int
+clv_source_compare (clv_source_t *self, clv_str string, size_t offset, size_t length) {
+    if (self == NULL || string == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    if (offset < 0 || offset + length > self->length) {
+        errno = EOVERFLOW;
+        return -1;
+    }
+
+    return (strncmp (self->data + offset, string, length) == 0) ? true : false;
+}
+
+
 clv_str
 clv_source_cstr (clv_source_t *self) {
     if (self == NULL) {
