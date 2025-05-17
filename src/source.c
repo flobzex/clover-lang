@@ -105,6 +105,22 @@ clv_source_at (clv_source_t *self, size_t index) {
 
 
 clv_str
+clv_source_offset (clv_source_t *self, size_t offset) {
+    if (self == NULL) {
+        errno = EINVAL;
+        return NULL;
+    }
+
+    if (offset >= self->length) {
+        errno = EOVERFLOW;
+        return NULL;
+    }
+
+    return &self->data[offset];
+}
+
+
+clv_str
 clv_source_substr (clv_source_t *self, size_t offset, size_t length) {
     if (self == NULL) {
         errno = EINVAL;
