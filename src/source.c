@@ -79,8 +79,8 @@ clv_source_new (clv_str file) {
     }
 
     if (!read_file (file, (char **)&new_src->data, &new_src->length)) {
-        free (new_src->file);
-        free (new_src);
+        free (CLV_VOIDPTR (new_src->file));
+        free (CLV_VOIDPTR (new_src));
         return NULL;
     }
 
