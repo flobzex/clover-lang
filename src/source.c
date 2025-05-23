@@ -35,6 +35,12 @@ read_file (clv_str file, char **out_data, size_t *out_length) {
     length = ftell (fp);
     rewind (fp);
 
+    if (length == 0) {
+        errno = EBADF;
+        fclose (fp);
+        return false;
+    }
+
     data = malloc (length + 1);
 
     if (data == NULL) {
