@@ -25,6 +25,8 @@ _clv_list_make_node (void *ptr) {
     }
 
     node->ptr = ptr;
+    node->prev = NULL;
+    node->next = NULL;
 
     return node;
 }
