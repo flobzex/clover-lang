@@ -4,6 +4,6 @@
 #include <clover/base.h>
 #include <clover/log.h>
 
-#define clv_assert(expr,tail)   if (!(expr)) { clv_error ("assertion failed: " CLV_STRING (expr), msg); tail; }
+#define clv_assert(expr,tail)   if (!(expr)) { clv_error ("assertion failed: " CLV_STRING (expr)); tail; }
 
 #endif /* CLOVER_ASSERT_H_ */
