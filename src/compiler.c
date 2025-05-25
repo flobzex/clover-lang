@@ -12,7 +12,7 @@ struct clv_unit {
 
 
 static bool
-compile_unit (FILE *err_fd, clv_str file, struct clv_unit **out_unit) {
+compile_unit (clv_str file, struct clv_unit **out_unit) {
     clv_error ("%s: stub", __func__);
     return false;
 }
@@ -26,7 +26,7 @@ write_exec (clv_str _manifest, clv_str output) {
 
 
 bool
-clv_compile (FILE *err_fd, clv_str _manifest, clv_list_t *files, clv_str output, bool debug) {
+clv_compile (clv_str _manifest, clv_list_t *files, clv_str output, bool debug) {
     clv_list_t *units = clv_list_new ();
 
     if (units == NULL) {
@@ -42,7 +42,7 @@ clv_compile (FILE *err_fd, clv_str _manifest, clv_list_t *files, clv_str output,
 
         struct clv_unit *unit;
 
-        if (compile_unit (err_fd, file, &unit)) {
+        if (compile_unit (file, &unit)) {
             clv_list_push_back (units, CLV_VOIDPTR (unit));
         } else {
             good = false;

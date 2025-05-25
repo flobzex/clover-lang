@@ -195,7 +195,7 @@ dump_options () {
 
 inline static void
 compile_program () {
-    if (!clv_compile (stderr, options.cp_manifest_file, options.args, options.cp_output_file, options.cp_debug)) {
+    if (!clv_compile (options.cp_manifest_file, options.args, options.cp_output_file, options.cp_debug)) {
         if (errno != 0) {
             clv_error ("%s", strerror (errno));
         }
