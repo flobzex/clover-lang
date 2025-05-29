@@ -154,7 +154,7 @@ clv_source_compare (clv_source_t *self, clv_str string, size_t offset, size_t le
         return -1;
     }
 
-    return (strncmp (self->data + offset, string, length) == 0) ? true : false;
+    return strncmp (self->data + offset, string, length);
 }
 
 
