@@ -1,20 +1,59 @@
 #include <clover/compiler.h>
 #include <clover/source.h>
+#include <clover/assert.h>
 #include <clover/log.h>
+
+#include <clover/lexer.h>
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <errno.h>
 
 
-struct clv_unit {
-    clv_str file;
-};
+static void
+dump_tokens (clv_source_t *source, clv_list_t *tokens) {
+    clv_list_iter_t iter = clv_list_get_head (tokens);
+
+    for (; iter != NULL; iter = clv_list_iter_get_next (iter)) {
+        clv_token_t *token = clv_list_iter_get_data (iter);
+
+        printf ("[%-18p]  prev: %-18p  next: %-18p  ", iter,
+                clv_list_iter_get_prev (iter),
+                clv_list_iter_get_next (iter));
+        fflush (stdout);
+        fwrite (clv_source_offset (source, token->offset), 1, token->length, stdout);
+        putc ('\n', stdout);
+    }
+}
 
 
 static bool
-compile_unit (clv_str file, struct clv_unit **out_unit) {
-    clv_error ("%s: stub", __func__);
-    return false;
+compile_unit (clv_str file, clv_str *out_objfile) {
+    clv_assert (file != NULL, return false);
+    clv_assert (out_objfile != NULL, return false);
+
+    clv_source_t *src = clv_source_new (file);
+
+    if (src == NULL) {
+        clv_error ("%s: %s", strerror (errno), file);
+        return false;
+    }
+
+    clv_list_t *tokens;
+    bool result = true;
+
+    if (!clv_lex (src, &tokens)) {
+        result = false;
+        goto cleanup;
+    }
+
+    dump_tokens (src, tokens);
+
+cleanup:
+    clv_source_free (src);
+
+    return result;
 }
 
 
@@ -39,11 +78,10 @@ clv_compile (clv_str _manifest, clv_list_t *files, clv_str output, bool debug) {
 
     for (; iter != NULL; iter = clv_list_iter_get_next (iter)) {
         clv_str file = clv_list_iter_get_data (iter);
+        clv_str obj_file = NULL;
 
-        struct clv_unit *unit;
-
-        if (compile_unit (file, &unit)) {
-            clv_list_push_back (units, CLV_VOIDPTR (unit));
+        if (compile_unit (file, &obj_file)) {
+            clv_list_push_back (units, CLV_VOIDPTR (obj_file));
         } else {
             good = false;
             break;

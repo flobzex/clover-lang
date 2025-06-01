@@ -1,0 +1,7 @@
+// Validates identifiers
+
+valid_identifier_1
+_valid_identifier2
+_3_valid_identifier
+ValidIdentifier4
+VALID_IDENTIFIER_5

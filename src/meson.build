@@ -3,5 +3,6 @@ clover_sources = files([
   'log.c',
   'list.c',
   'source.c',
+  'lexer.c',
   'compiler.c'
 ])
